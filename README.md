@@ -22,13 +22,12 @@ Currently, we release a simple evaluation pipeline that outputs a probability of
 ## Citation
 
 ```
-@misc{park2024communityforensics,
-    title={Community Forensics: Using Thousands of Generators to Train Fake Image Detectors}, 
-    author={Jeongsoo Park and Andrew Owens},
-    year={2024},
-    eprint={2411.04125},
-    archivePrefix={arXiv},
-    primaryClass={cs.CV},
-    url={https://arxiv.org/abs/2411.04125}, 
+@InProceedings{Park_2025_CVPR,
+    author    = {Park, Jeongsoo and Owens, Andrew},
+    title     = {Community Forensics: Using Thousands of Generators to Train Fake Image Detectors},
+    booktitle = {Proceedings of the Computer Vision and Pattern Recognition Conference (CVPR)},
+    month     = {June},
+    year      = {2025},
+    pages     = {8245-8257}
 }
 ```
