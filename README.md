@@ -16,6 +16,9 @@ Training and evaluation results can be reported to `wandb` if `--wandb_token` ar
 For a single-image evaluation-only pipeline, please check the [eval_single](https://github.com/JeongsooP/Community-Forensics/tree/eval_single) branch.
 
 ## Usage Examples
+
+Checkpoints for the pretrained models can be downloaded [here](https://www.dropbox.com/scl/fi/e8titz35ci9a2ij1oq5mu/model_weights.tar?rlkey=tmyz3tjqf7b4dg071kypsgoal&st=09ud9hdj&dl=0).
+
 ### Training with Hugging Face data only
 By default, checkpoints will be saved in the directory of `models.py` script. You can override where the checkpoint will be saved by passing `--save_path` argument. This argument should follow the format: `/path/to/checkpoint/{model_name}.pt`. You can load the checkpoints by passing `--ckpt_path` argument.
 
