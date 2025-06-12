@@ -1,0 +1,10 @@
+torch==2.7.1
+torchaudio==2.7.1
+torchmetrics==1.7.2
+torchvision==0.22.1
+datasets==3.6.0
+timm==1.0.15
+wandb==0.20.1
+opencv-python==4.11.0.86
+numpy
+pandas
