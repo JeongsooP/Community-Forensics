@@ -13,7 +13,7 @@ The training pipeline also contains the data augmentation technique used in our 
 
 Training and evaluation results can be reported to `wandb` if `--wandb_token` argument is provided.
 
-For a single-image evaluation-only pipeline, please check the [eval_single](https://github.com/JeongsooP/Community-Forensics/tree/eval_single) branch.
+To simply evaluate of handful of images, please check the `eval_using_huggingface.ipynb` notebook. You can also use the [eval_single](https://github.com/JeongsooP/Community-Forensics/tree/eval_single) branch.
 
 ## Usage Examples
 
