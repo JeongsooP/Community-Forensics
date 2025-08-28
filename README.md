@@ -13,14 +13,14 @@ The training pipeline also contains the data augmentation technique used in our 
 
 Training and evaluation results can be reported to `wandb` if `--wandb_token` argument is provided.
 
-To simply evaluate of handful of images, please check the `eval_using_huggingface.ipynb` notebook. You can also use the [eval_single](https://github.com/JeongsooP/Community-Forensics/tree/eval_single) branch.
+To simply evaluate of handful of images, please check the [eval_using_huggingface.ipynb](eval_using_huggingface.ipynb) notebook. You can also use the [eval_single](https://github.com/JeongsooP/Community-Forensics/tree/eval_single) branch.
 
 ## Usage Examples
 
 Install the requirements using `pip install -r requirements.txt`
 
-**Model checkpoints are now available on Hugging Face: [384-input-version](https://huggingface.co/OwensLab/commfor-model-384), [224-input-version](https://huggingface.co/OwensLab/commfor-model-224)**. They can be loaded using the `--hf_model_repo` argument.
-* Two additional libraries required: `huggingface-hub`, `transformers` (included in `requirements.txt`)
+**Model checkpoints are now available on Hugging Face: [384-input version](https://huggingface.co/OwensLab/commfor-model-384), [224-input version](https://huggingface.co/OwensLab/commfor-model-224)**. They can be loaded using the `--hf_model_repo` argument.
+* Two additional libraries required: `huggingface-hub`, `transformers` (included in [requirements.txt](requirements.txt))
 
 PyTorch Checkpoints for the pretrained models can also be downloaded [here (DropBox)](https://www.dropbox.com/scl/fi/e8titz35ci9a2ij1oq5mu/model_weights.tar?rlkey=tmyz3tjqf7b4dg071kypsgoal&st=09ud9hdj&dl=0). 
 
