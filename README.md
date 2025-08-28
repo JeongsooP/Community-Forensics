@@ -17,7 +17,13 @@ For a single-image evaluation-only pipeline, please check the [eval_single](http
 
 ## Usage Examples
 
-Checkpoints for the pretrained models can be downloaded [here](https://www.dropbox.com/scl/fi/e8titz35ci9a2ij1oq5mu/model_weights.tar?rlkey=tmyz3tjqf7b4dg071kypsgoal&st=09ud9hdj&dl=0).
+Install the requirements using `pip install -r requirements.txt`
+
+**Model checkpoints are now available on Hugging Face: [384-input-version](https://huggingface.co/OwensLab/commfor-model-384), [224-input-version](https://huggingface.co/OwensLab/commfor-model-224)**. They can be loaded using the `--hf_model_repo` argument.
+* Two additional libraries required: `huggingface-hub`, `transformers` (included in `requirements.txt`)
+
+PyTorch Checkpoints for the pretrained models can also be downloaded [here (DropBox)](https://www.dropbox.com/scl/fi/e8titz35ci9a2ij1oq5mu/model_weights.tar?rlkey=tmyz3tjqf7b4dg071kypsgoal&st=09ud9hdj&dl=0). 
+
 
 ### Training with Hugging Face data only
 By default, checkpoints will be saved in the directory of `models.py` script. You can override where the checkpoint will be saved by passing `--save_path` argument. This argument should follow the format: `/path/to/checkpoint/{model_name}.pt`. You can load the checkpoints by passing `--ckpt_path` argument.
@@ -143,7 +149,8 @@ torchrun --nproc_per_node=$NUM_GPUS --nnodes=1 --rdzv_id=123 --rdzv_backend=c10d
 NUM_GPUS=1
 NUM_CPUS_PER_GPU=4
 BATCH_SIZE_PER_GPU=128
-CKPT_PATH="/path/to/checkpoint_file/commfor_train_ckpt.pt"
+HF_MODEL_REPO="OwensLab/commfor-model-384"
+#CKPT_PATH="/path/to/checkpoint_file/commfor_train_ckpt.pt" # When using local PyTorch checkpoint. Use with `--ckpt_path $CKPT_PATH` argument
 
 export OMP_NUM_THREADS=$NUM_CPUS_PER_GPU
 export MASTER_ADDR=localhost
@@ -153,7 +160,7 @@ torchrun --nproc_per_node=$NUM_GPUS --nnodes=1 --rdzv_id=123 --rdzv_backend=c10d
     --gpus $NUM_GPUS \
     --cpus-per-gpu $NUM_CPUS_PER_GPU \
     --batch_size $BATCH_SIZE_PER_GPU \
-    --ckpt_path $CKPT_PATH \
+    --hf_model_repo $HF_MODEL_REPO \
     --huggingface_test_repo "OwensLab/CommunityForensics" \
     --hf_split_test "PublicEval" \
     --verbose 2 \
@@ -179,7 +186,8 @@ Local files must be structured in the following way:
 NUM_GPUS=1
 NUM_CPUS_PER_GPU=4
 BATCH_SIZE_PER_GPU=128
-CKPT_PATH="/path/to/checkpoint_file/commfor_train_ckpt.pt"
+HF_MODEL_REPO="OwensLab/commfor-model-384"
+#CKPT_PATH="/path/to/checkpoint_file/commfor_train_ckpt.pt" # When using local PyTorch checkpoint. Use with `--ckpt_path $CKPT_PATH` argument
 
 export OMP_NUM_THREADS=$NUM_CPUS_PER_GPU
 export MASTER_ADDR=localhost
@@ -189,7 +197,7 @@ torchrun --nproc_per_node=$NUM_GPUS --nnodes=1 --rdzv_id=123 --rdzv_backend=c10d
     --gpus $NUM_GPUS \
     --cpus-per-gpu $NUM_CPUS_PER_GPU \
     --batch_size $BATCH_SIZE_PER_GPU \
-    --ckpt_path $CKPT_PATH \
+    --hf_model_repo $HF_MODEL_REPO \
     --huggingface_test_repo "OwensLab/CommunityForensics" \
     --hf_split_test "PublicEval" \
     --additional_test_data "/path/to/additional_data/root" \
@@ -208,7 +216,8 @@ You can pass `""` for `--huggingface_test_repo` argument if you only want to eva
 NUM_GPUS=1
 NUM_CPUS_PER_GPU=4
 BATCH_SIZE_PER_GPU=128
-CKPT_PATH="/path/to/checkpoint_file/commfor_train_ckpt.pt"
+HF_MODEL_REPO="OwensLab/commfor-model-384"
+#CKPT_PATH="/path/to/checkpoint_file/commfor_train_ckpt.pt" # When using local PyTorch checkpoint. Use with `--ckpt_path $CKPT_PATH` argument
 
 export OMP_NUM_THREADS=$NUM_CPUS_PER_GPU
 export MASTER_ADDR=localhost
@@ -218,7 +227,7 @@ torchrun --nproc_per_node=$NUM_GPUS --nnodes=1 --rdzv_id=123 --rdzv_backend=c10d
     --gpus $NUM_GPUS \
     --cpus-per-gpu $NUM_CPUS_PER_GPU \
     --batch_size $BATCH_SIZE_PER_GPU \
-    --ckpt_path $CKPT_PATH \
+    --hf_model_repo $HF_MODEL_REPO \
     --huggingface_test_repo "" \
     --additional_test_data "/path/to/additional_data/root" \
     --additional_data_label_format "real:0,fake:1" \
@@ -233,11 +242,15 @@ torchrun --nproc_per_node=$NUM_GPUS --nnodes=1 --rdzv_id=123 --rdzv_backend=c10d
 `train.py` and `eval.py` use the same set of arguments:
 
 ```
-usage: train.py [-h] [--gpus GPUS] [--gpus_list GPUS_LIST] [--cpus-per-gpu CPUS_PER_GPU] [--epochs EPOCHS] [--train_itrs TRAIN_ITRS] [--batch_size BATCH_SIZE] [--lr LR] [--weight_decay WEIGHT_DECAY] [--warmup_epochs WARMUP_EPOCHS] [--warmup_frac WARMUP_FRAC] [--no_lr_schedule]
-                [--val_frac VAL_FRAC] [--num_ops NUM_OPS] [--ops_magnitude OPS_MAGNITUDE] [--rsa_ops RSA_OPS] [--rsa_min_num_ops RSA_MIN_NUM_OPS] [--rsa_max_num_ops RSA_MAX_NUM_OPS] [--model_inner_dim MODEL_INNER_DIM] [--model_size MODEL_SIZE] [--input_size INPUT_SIZE]
-                [--patch_size PATCH_SIZE] [--freeze_backbone] [--dont_add_sigmoid] [--use_amp] [--amp_dtype AMP_DTYPE] [--save_path SAVE_PATH] [--ckpt_save_path CKPT_SAVE_PATH] [--ckpt_path CKPT_PATH] [--ckpt_keep_count CKPT_KEEP_COUNT] [--only_load_model_weights]
-                [--tokens_path TOKENS_PATH] [--wandb_token WANDB_TOKEN] [--cache_dir CACHE_DIR] [--dont_limit_real_data_to_fake] [--huggingface_train_repo HUGGINGFACE_TRAIN_REPO] [--huggingface_test_repo HUGGINGFACE_TEST_REPO] [--hf_split_train HF_SPLIT_TRAIN]
-                [--hf_split_test HF_SPLIT_TEST] [--additional_train_data ADDITIONAL_TRAIN_DATA] [--additional_test_data ADDITIONAL_TEST_DATA] [--additional_data_label_format ADDITIONAL_DATA_LABEL_FORMAT] [--verbose VERBOSE] [--seed SEED]
+usage: train.py [-h] [--gpus GPUS] [--gpus_list GPUS_LIST] [--cpus-per-gpu CPUS_PER_GPU] [--epochs EPOCHS] [--train_itrs TRAIN_ITRS] [--batch_size BATCH_SIZE] [--lr LR] [--weight_decay WEIGHT_DECAY]
+                [--warmup_epochs WARMUP_EPOCHS] [--warmup_frac WARMUP_FRAC] [--no_lr_schedule] [--val_frac VAL_FRAC] [--test_frac TEST_FRAC] [--augment AUGMENT] [--num_ops NUM_OPS]
+                [--ops_magnitude OPS_MAGNITUDE] [--rsa_ops RSA_OPS] [--rsa_min_num_ops RSA_MIN_NUM_OPS] [--rsa_max_num_ops RSA_MAX_NUM_OPS] [--eval_only] [--model_inner_dim MODEL_INNER_DIM]
+                [--model_size MODEL_SIZE] [--input_size INPUT_SIZE] [--patch_size PATCH_SIZE] [--pretrained_path PRETRAINED_PATH] [--freeze_backbone] [--dont_add_sigmoid] [--use_amp]
+                [--amp_dtype AMP_DTYPE] [--save_path SAVE_PATH] [--ckpt_save_path CKPT_SAVE_PATH] [--ckpt_path CKPT_PATH] [--ckpt_keep_count CKPT_KEEP_COUNT] [--only_load_model_weights]
+                [--tokens_path TOKENS_PATH] [--wandb_token WANDB_TOKEN] [--cache_dir CACHE_DIR] [--dont_limit_real_data_to_fake] [--huggingface_train_repo HUGGINGFACE_TRAIN_REPO]
+                [--huggingface_test_repo HUGGINGFACE_TEST_REPO] [--hf_split_train HF_SPLIT_TRAIN] [--hf_split_test HF_SPLIT_TEST] [--hf_model_repo HF_MODEL_REPO]
+                [--additional_train_data ADDITIONAL_TRAIN_DATA] [--additional_test_data ADDITIONAL_TEST_DATA] [--additional_data_label_format ADDITIONAL_DATA_LABEL_FORMAT] [--verbose VERBOSE] [--seed SEED]
+                [--debug_port DEBUG_PORT]
 
 Train a binary classifier for fake image detection.
 
@@ -262,6 +275,9 @@ options:
                         Set up a fraction of total iterations to be used as warmup. Overrides `--warmup_epochs`. (-1: disabled)
   --no_lr_schedule      If set, do not use lr scheduler
   --val_frac VAL_FRAC   Fraction of validation set
+  --test_frac TEST_FRAC
+                        Fraction of test set
+  --augment AUGMENT     Augmentations to always use. Enter comma-separated string from the following:(singleJPEG, StochasticJPEG, rrc, flip, randaugment)
   --num_ops NUM_OPS     Number of operations
   --ops_magnitude OPS_MAGNITUDE
                         RandAugment magnitude (default=10), max=30
@@ -270,6 +286,7 @@ options:
                         Minimum number of operations for each element in rsa_ops. Provide either a comma-separated list of integers or a single integer to be broadcasted to all elements.
   --rsa_max_num_ops RSA_MAX_NUM_OPS
                         Maximum number of operations for each element in rsa_ops. Provide either a comma-separated list of integers or a single integer to be broadcasted to all elements.
+  --eval_only           If true, only evaluate model on test set.
   --model_inner_dim MODEL_INNER_DIM
                         Model inner dimension
   --model_size MODEL_SIZE
@@ -278,6 +295,8 @@ options:
                         Input size. 224 or 384
   --patch_size PATCH_SIZE
                         Patch size for ViT models
+  --pretrained_path PRETRAINED_PATH
+                        Path to pretrained model
   --freeze_backbone     If set, freeze backbone of model
   --dont_add_sigmoid    If set, do not add sigmoid to model output when evaluating
   --use_amp             If set, use automatic mixed precision
@@ -309,15 +328,21 @@ options:
                         Hugging Face split for training data.
   --hf_split_test HF_SPLIT_TEST
                         Hugging Face split for test data.
+  --hf_model_repo HF_MODEL_REPO
+                        Hugging Face repository ID for the model. Note that `--ckpt_path` argument will override this argument.
   --additional_train_data ADDITIONAL_TRAIN_DATA
-                        Path to additional data to use for training. The directory must follow a specific structure: <root>/<generator_name>/<real_or_fake>/<image_name>.<ext>. This flag should point to the root directory of the additional data.
+                        Path to additional data to use for training. The directory must follow a specific structure: <root>/<generator_name>/<real_or_fake>/<image_name>.<ext>. This flag should point to the
+                        root directory of the additional data.
   --additional_test_data ADDITIONAL_TEST_DATA
-                        Path to additional data to use for testing. The directory must follow a specific structure: <root>/<generator_name>/<real_or_fake>/<image_name>.<ext>. This flag should point to the root directory of the additional data.
+                        Path to additional data to use for testing. The directory must follow a specific structure: <root>/<generator_name>/<real_or_fake>/<image_name>.<ext>. This flag should point to the
+                        root directory of the additional data.
   --additional_data_label_format ADDITIONAL_DATA_LABEL_FORMAT
-                        Format for additional data labels. The format should be a comma-separated list of key:value pairs, where key is the label and value is the corresponding integer value. For example, 'real:0,fake:1' means that images under 'real' directory will be labeled as 0 and
-                        images under 'fake' directory will be labeled as 1.
-  --verbose VERBOSE     Verbosity. 0: no output, 1: per epoch output, 2: per iteration.
+                        Format for additional data labels. The format should be a comma-separated list of key:value pairs, where key is the label and value is the corresponding integer value. For example,
+                        'real:0,fake:1' means that images under 'real' directory will be labeled as 0 and images under 'fake' directory will be labeled as 1.
+  --verbose VERBOSE     Verbosity.
   --seed SEED           Random seed
+  --debug_port DEBUG_PORT
+                        Debug port for Debugpy. If set, will wait for debugger to attach.
 ```
 </details>
 

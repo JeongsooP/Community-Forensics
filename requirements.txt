@@ -8,3 +8,5 @@ wandb==0.20.1
 opencv-python==4.11.0.86
 numpy
 pandas
+huggingface-hub
+transformers

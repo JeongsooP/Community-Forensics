@@ -51,21 +51,27 @@ def parse_args():
     parser.add_argument('--warmup_frac', type=float, default=-1, help='Set up a fraction of total iterations to be used as warmup. Overrides `--warmup_epochs`. (-1: disabled)')
     parser.add_argument('--no_lr_schedule', action='store_true', help='If set, do not use lr scheduler')
     parser.add_argument('--val_frac', type=float, default=0.01, help='Fraction of validation set')
+    parser.add_argument('--test_frac', type=float, default=0.0, help='Fraction of test set')
+    parser.add_argument('--augment', type=str, default='', help='Augmentations to always use. Enter comma-separated string from the following:(singleJPEG, StochasticJPEG, rrc, flip, randaugment)')
     parser.add_argument('--num_ops', type=int, default=2, help='Number of operations')
     parser.add_argument('--ops_magnitude', type=int, default=10, help="RandAugment magnitude (default=10), max=30")
     parser.add_argument('--rsa_ops', type=str, default="JPEGinMemory,RandomResizeWithRandomIntpl,RandomCrop,RandomHorizontalFlip,RandomVerticalFlip,RRCWithRandomIntpl,RandomRotation,RandomTranslate,RandomShear,RandomPadding,RandomCutout", help='List of augmentations to use for RandomStateAugmentation. Provide a comma-separated list of augmentations to use for RSA')
     parser.add_argument('--rsa_min_num_ops', type=str, default='0', help='Minimum number of operations for each element in rsa_ops. Provide either a comma-separated list of integers or a single integer to be broadcasted to all elements.')
     parser.add_argument('--rsa_max_num_ops', type=str, default='2', help='Maximum number of operations for each element in rsa_ops. Provide either a comma-separated list of integers or a single integer to be broadcasted to all elements.')
+    parser.add_argument("--eval_only", action="store_true", help="If true, only evaluate model on test set.")
+    #parser.add_argument("--eval_separately", action="store_true", help="If set, evaluate each generator in test set separately. Note that evaluating AP requires paired real/fake data -- make sure the test set is paired if you need to compute AP.")
 
     # Model arguments
     parser.add_argument('--model_inner_dim', type=int, default=512, help='Model inner dimension')
     parser.add_argument('--model_size', type=str, default='small', help='Model size. Small or tiny')
     parser.add_argument('--input_size', type=int, default=384, help='Input size. 224 or 384')
     parser.add_argument('--patch_size', type=int, default=16, help='Patch size for ViT models')
+    parser.add_argument('--pretrained_path', type=str, default='', help='Path to pretrained model')
     parser.add_argument('--freeze_backbone', action='store_true', help='If set, freeze backbone of model')
     parser.add_argument('--dont_add_sigmoid', action='store_true', help='If set, do not add sigmoid to model output when evaluating')
     parser.add_argument('--use_amp', action='store_true', help='If set, use automatic mixed precision')
     parser.add_argument('--amp_dtype', type=str, default='fp16', help='Data type for automatic mixed precision. fp16 or bf16')
+    #parser.add_argument('--from_scratch', action='store_true', help='If set, train model from scratch without loading pretrained weights')
     
     # path arguments (loading, saving, flags, etc)
     parser.add_argument('--save_path', type=str, default='', help='Path to save model')
@@ -81,13 +87,15 @@ def parse_args():
     parser.add_argument("--huggingface_test_repo", type=str, default="OwensLab/CommunityForensics", help="Hugging Face repo ID for the test dataset.")
     parser.add_argument("--hf_split_train", type=str, default="Systematic+Manual", help="Hugging Face split for training data.")
     parser.add_argument("--hf_split_test", type=str, default="PublicEval", help="Hugging Face split for test data.")
+    parser.add_argument("--hf_model_repo", type=str, default="", help="Hugging Face repository ID for the model. Note that `--ckpt_path` argument will override this argument.")
     parser.add_argument("--additional_train_data", type=str, default="", help="Path to additional data to use for training. The directory must follow a specific structure: <root>/<generator_name>/<real_or_fake>/<image_name>.<ext>. This flag should point to the root directory of the additional data.")
     parser.add_argument("--additional_test_data", type=str, default="", help="Path to additional data to use for testing. The directory must follow a specific structure: <root>/<generator_name>/<real_or_fake>/<image_name>.<ext>. This flag should point to the root directory of the additional data.")
     parser.add_argument("--additional_data_label_format", type=str, default="real:0,fake:1", help="Format for additional data labels. The format should be a comma-separated list of key:value pairs, where key is the label and value is the corresponding integer value. For example, 'real:0,fake:1' means that images under 'real' directory will be labeled as 0 and images under 'fake' directory will be labeled as 1.")
 
     # Misc arguments
-    parser.add_argument('--verbose', type=int, default=1, help='Verbosity. 0: no output, 1: per epoch output, 2: per iteration.')
+    parser.add_argument('--verbose', type=int, default=1, help='Verbosity.')
     parser.add_argument('--seed', type=int, default=42, help='Random seed')
+    parser.add_argument('--debug_port', type=int, default=-1, help='Debug port for Debugpy. If set, will wait for debugger to attach.')
 
     args = parser.parse_args()
 
@@ -443,6 +451,8 @@ class evalSeparately():
 
     @staticmethod
     def calculate_metrics(args, outputs, labels, criterion, rank, logger:logging.Logger, evalName="Val"):
+        # ref_out, ref_lab: reference output and label for calculating some of the metrics. If None, then it is not used.
+        #logger=logging.getLogger()
         # now assume data comes with generator label
         binaryAcc = tmc.BinaryAccuracy(dist_sync_on_step=False, process_group=None).to(rank)
         binaryAP = tmc.BinaryAveragePrecision(dist_sync_on_step=False, process_group=None).to(rank)
@@ -482,7 +492,7 @@ class evalSeparately():
         meanAP=[]
 
         for generator_name in sorted(self.unique_generator_names):
-            output_all, label_all = self.read_saved_data(generator_name)
+            output_all, label_all = self.read_saved_data(generator_name) # output_all, label_all instead of self.output_dict[generator_name] and self.label_dict[generator_name]
             loss, acc, ap = self.calculate_metrics(self.args, output_all, label_all, criterion, rank, logger, evalName=generator_name)
             if rank == 0:
                 # log generator_name in wandb
@@ -616,6 +626,13 @@ def keep_only_topn_checkpoints(ckpt_path, top_n=5):
             os.remove(os.path.join(ckpt_dir, f))
 
     return
+
+def load_ckpt_from_huggingface(model, hf_repo_id, rank):
+    dist.barrier()
+    model=model.from_pretrained(hf_repo_id).to(rank)
+    if rank==0:
+        print(f"Model weights loaded from Hugging Face: {hf_repo_id}")
+    return model
 
 def load_checkpoint(model, optimizer, scheduler, scaler, ckpt_path, rank):
     """

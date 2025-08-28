@@ -42,7 +42,12 @@ def train(
 
     # Load model
     try:
-        model = models.ViTClassifier(args=args, device=local_rank, dtype=torch.float32).to(args.local_rank)
+        model = models.ViTClassifier(
+            model_size=args.model_size,
+            input_size=args.input_size,
+            patch_size=args.patch_size,
+            freeze_backbone=args.freeze_backbone,
+            device=local_rank, dtype=torch.float32).to(args.local_rank)
     except Exception as e:
         logger.error(f"Error loading model. rank={rank}: {e}")
         sys.exit(1)
@@ -63,7 +68,7 @@ def train(
     criterion = nn.BCEWithLogitsLoss()
 
     # Load checkpoint if set
-    if args.ckpt_path != '':
+    if args.ckpt_path != '': # note that if this is set, it overrides the `--hf_model_repo` argument.
         if args.only_load_model_weights:
             model = ut.load_only_weights(model, args.ckpt_path, rank)
             epoch_start = 0
@@ -71,6 +76,10 @@ def train(
         else:
             model, optimizer, scheduler, epoch_start, total_itr = ut.load_checkpoint(model, optimizer, scheduler, scaler, args.ckpt_path, rank)
             epoch_start = epoch_start+1 # Since it saves current epoch for ckpt, not next.
+    elif args.hf_model_repo != '':
+        model = ut.load_ckpt_from_huggingface(model, args.hf_model_repo, rank)
+        epoch_start = 0
+        total_itr = 0
     else:
         epoch_start = 0
         total_itr = 0
@@ -141,6 +150,13 @@ def train(
 def main():
     args = ut.parse_args()
     args.random_port_offset = np.random.randint(-1000,1000) # randomize to avoid port conflict in same device
+    
+    if args.debug_port > 0:
+        import debugpy
+        debugpy.listen(('localhost', args.debug_port))
+        logger.info(f"Waiting for debugger to attach on port {args.debug_port}...")
+        debugpy.wait_for_client()
+        debugpy.breakpoint()
 
     if args.gpus_list != '':
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus_list

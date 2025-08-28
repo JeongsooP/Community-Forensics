@@ -37,7 +37,12 @@ def eval(
 
     # Load model
     try:
-        model = models.ViTClassifier(args=args, device=local_rank, dtype=torch.float32).to(args.local_rank)
+        model = models.ViTClassifier(
+            model_size=args.model_size,
+            input_size=args.input_size,
+            patch_size=args.patch_size,
+            freeze_backbone=args.freeze_backbone,
+            device=local_rank, dtype=torch.float32).to(args.local_rank)
     except Exception as e:
         logger.error(f"Error loading model. rank={rank}: {e}")
         sys.exit(1)
@@ -48,6 +53,9 @@ def eval(
     # Load checkpoint
     if args.ckpt_path != '':
         model = ut.load_only_weights(model, args.ckpt_path, rank)
+        model.eval()
+    elif args.hf_model_repo != '':
+        model = ut.load_ckpt_from_huggingface(model, args.hf_model_repo, rank)
         model.eval()
     else:
         raise ValueError("Checkpoint path is not set. Please provide a valid checkpoint path via `--ckpt_path` argument.")
