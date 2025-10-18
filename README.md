@@ -3,7 +3,7 @@ Using Thousands of Generators to Train Fake Image Detectors (CVPR 2025)
 ---
 
 Repository for [Community Forensics: Using Thousands of Generators to Train Fake Image Detectors](https://arxiv.org/abs/2411.04125). \
-([Project Page](https://jespark.net/projects/2024/community_forensics/), [Dataset (Full; 1.1TB)](https://huggingface.co/datasets/OwensLab/CommunityForensics), [Dataset (Small; 278GB)](https://huggingface.co/datasets/OwensLab/CommunityForensics-Small))
+([Project Page](https://jespark.net/projects/2024/community_forensics/), [Dataset (Full; 1.1TB)](https://huggingface.co/datasets/OwensLab/CommunityForensics), [Dataset (Small; 278GB)](https://huggingface.co/datasets/OwensLab/CommunityForensics-Small), [Evaluation set (206GB)](https://huggingface.co/datasets/OwensLab/CommunityForensics-Eval))
 
 ## Description
 This repository contains the training and evaluation pipeline for Community Forensics. The pipeline supports distributed data parallel through `torchrun` and accepts two data sources -- Hugging Face repo and local data. 
