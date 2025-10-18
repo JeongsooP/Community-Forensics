@@ -161,8 +161,8 @@ torchrun --nproc_per_node=$NUM_GPUS --nnodes=1 --rdzv_id=123 --rdzv_backend=c10d
     --cpus-per-gpu $NUM_CPUS_PER_GPU \
     --batch_size $BATCH_SIZE_PER_GPU \
     --hf_model_repo $HF_MODEL_REPO \
-    --huggingface_test_repo "OwensLab/CommunityForensics" \
-    --hf_split_test "PublicEval" \
+    --huggingface_test_repo "OwensLab/CommunityForensics-Eval" \
+    --hf_split_test "CompEval" \
     --verbose 2 \
 ```
 </details>
@@ -198,8 +198,8 @@ torchrun --nproc_per_node=$NUM_GPUS --nnodes=1 --rdzv_id=123 --rdzv_backend=c10d
     --cpus-per-gpu $NUM_CPUS_PER_GPU \
     --batch_size $BATCH_SIZE_PER_GPU \
     --hf_model_repo $HF_MODEL_REPO \
-    --huggingface_test_repo "OwensLab/CommunityForensics" \
-    --hf_split_test "PublicEval" \
+    --huggingface_test_repo "OwensLab/CommunityForensics-Eval" \
+    --hf_split_test "CompEval" \
     --additional_test_data "/path/to/additional_data/root" \
     --additional_data_label_format "real:0,fake:1" \
     --verbose 2 \
