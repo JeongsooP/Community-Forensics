@@ -36,8 +36,8 @@ class ViTClassifier(nn.Module):
         """
         #x = x/255.0
         assert isinstance(x, Image.Image) or isinstance(x, torch.Tensor), "Input should be a PIL image or a PyTorch tensor."
-        norm_mean = [0.48145466, 0.4578275, 0.40821073]
-        norm_std = [0.26862954, 0.26130258, 0.27577711]
+        norm_mean = [0.485, 0.456, 0.406] #imagenet norm
+        norm_std = [0.229, 0.224, 0.225]
         augment_list = []
         resize_size=440 # assuming default input size is 384 as it is the best model
         crop_size=384
